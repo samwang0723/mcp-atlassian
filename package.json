@@ -1,0 +1,34 @@
+{
+  "name": "mcp-atlassian",
+  "version": "1.0.0",
+  "description": "MCP server for Confluence & JIRA",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "node -r tsconfig-paths/register -r ./paths.js dist/index.js",
+    "dev": "ts-node -r tsconfig-paths/register src/index.ts",
+    "build": "tsc",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^22.13.5",
+    "@typescript-eslint/eslint-plugin": "^8.25.0",
+    "@typescript-eslint/parser": "^8.25.0",
+    "eslint": "^9.21.0",
+    "eslint-config-prettier": "^10.0.2",
+    "eslint-plugin-prettier": "^5.2.3",
+    "prettier": "^3.5.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.6.0",
+    "confluence.js": "^1.7.4",
+    "dotenv": "^16.4.7",
+    "ts-jira-client": "^1.0.6",
+    "tsconfig-paths": "^4.2.0"
+  }
+}

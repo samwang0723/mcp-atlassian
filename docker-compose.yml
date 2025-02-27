@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  mcp-atlassian:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mcp/atlassian
+    restart: unless-stopped
+    env_file:
+      - .env
+    stdin_open: true
+    tty: true
+    volumes:
+      - ./logs:/app/logs
+    networks:
+      - mcp-network
+
+networks:
+  mcp-network:
+    driver: bridge

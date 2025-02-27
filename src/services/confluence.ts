@@ -61,7 +61,7 @@ export class ConfluenceService {
    */
   async searchContent(cql: string, limit = 10) {
     try {
-      return await this.client.search.search({
+      return await this.client.search.searchByCQL({
         cql,
         limit,
       });

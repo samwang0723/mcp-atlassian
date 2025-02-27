@@ -30,6 +30,10 @@ RUN npm pkg delete scripts.prepare && \
 # Copy built files from builder stage
 COPY --from=builder /app/dist ./dist
 
+# Copy configuration files
+COPY --from=builder /app/paths.js ./paths.js
+COPY --from=builder /app/tsconfig.json ./tsconfig.json
+
 # Copy .env file if it exists
 COPY --from=builder /app/.env ./.env
 
@@ -37,4 +41,4 @@ COPY --from=builder /app/.env ./.env
 ENV NODE_ENV=production
 
 # Start the application
-CMD ["node", "dist/index.js"] 
+CMD ["node", "-r", "tsconfig-paths/register", "-r", "./paths.js", "dist/index.js"] 

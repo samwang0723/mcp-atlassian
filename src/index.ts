@@ -13,9 +13,6 @@ import {
   registerGetConfluencePagesTool,
   registerSearchJiraIssuesTool,
   registerGetJiraIssueTool,
-  registerGetJiraProjectsTool,
-  registerGetJiraProjectTool,
-  registerGetJiraIssueTypesTool,
 } from './tools';
 
 // Create an MCP server
@@ -37,9 +34,6 @@ registerGetConfluencePagesTool(server, confluenceService);
 // Register Jira tools
 registerSearchJiraIssuesTool(server, jiraService);
 registerGetJiraIssueTool(server, jiraService);
-registerGetJiraProjectsTool(server, jiraService);
-registerGetJiraProjectTool(server, jiraService);
-registerGetJiraIssueTypesTool(server, jiraService);
 
 // Start receiving messages on stdin and sending messages on stdout
 async function runServer() {

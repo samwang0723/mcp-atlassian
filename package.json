@@ -28,6 +28,7 @@
     "@modelcontextprotocol/sdk": "^1.6.0",
     "confluence.js": "^1.7.4",
     "dotenv": "^16.4.7",
+    "module-alias": "^2.2.3",
     "ts-jira-client": "^1.0.6",
     "tsconfig-paths": "^4.2.0"
   }

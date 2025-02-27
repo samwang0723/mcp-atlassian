@@ -13,7 +13,7 @@ export function registerSearchConfluenceTool(
   confluenceService: ConfluenceService,
 ) {
   server.tool(
-    'search-confluence',
+    'search_confluence',
     {
       query: z
         .string()

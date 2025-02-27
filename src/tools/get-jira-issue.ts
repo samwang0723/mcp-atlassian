@@ -13,7 +13,7 @@ export function registerGetJiraIssueTool(
   jiraService: JiraService,
 ) {
   server.tool(
-    'get-jira-issue',
+    'get_jira_issue',
     {
       issueKey: z
         .string()

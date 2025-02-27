@@ -13,7 +13,7 @@ export function registerGetConfluenceContentTool(
   confluenceService: ConfluenceService,
 ) {
   server.tool(
-    'get-confluence-content',
+    'get_confluence_content',
     {
       contentId: z
         .string()

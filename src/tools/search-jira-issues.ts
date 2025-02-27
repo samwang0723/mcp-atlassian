@@ -13,7 +13,7 @@ export function registerSearchJiraIssuesTool(
   jiraService: JiraService,
 ) {
   server.tool(
-    'search-jira-issues',
+    'search_jira_issues',
     {
       jql: z.string().describe('The JQL query to search for issues'),
       maxResults: z

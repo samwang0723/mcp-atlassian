@@ -13,7 +13,7 @@ export function registerGetConfluencePagesTool(
   confluenceService: ConfluenceService,
 ) {
   server.tool(
-    'get-confluence-pages',
+    'get_confluence_pages',
     {
       spaceKey: z.string().describe('The key of the Confluence space'),
       limit: z

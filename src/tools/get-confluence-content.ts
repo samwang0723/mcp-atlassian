@@ -22,7 +22,8 @@ export function registerGetConfluenceContentTool(
     async ({ contentId }) => {
       try {
         const content = await confluenceService.getContent(contentId);
-        return formatResponse(content);
+        // We still pass true for PII, but our modified formatResponse will handle it intelligently
+        return formatResponse(content, true);
       } catch (err) {
         return formatErrorResponse(err);
       }

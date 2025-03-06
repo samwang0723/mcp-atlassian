@@ -44,6 +44,6 @@ async function runServer() {
 runServer().catch(console.error);
 
 process.stdin.on('close', () => {
-  console.error('Sumologic MCP Server closed');
+  console.error('Atlassian MCP Server closed');
   server.close();
 });

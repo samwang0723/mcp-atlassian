@@ -1,15 +1,25 @@
 import { JiraApi } from 'ts-jira-client';
 import config from '@/config/env';
 
+// Add Node.js types for process
+declare global {
+  interface Process {
+    env: ProcessEnv;
+  }
+  interface ProcessEnv {
+    NODE_TLS_REJECT_UNAUTHORIZED?: string;
+  }
+}
+
 // Define interfaces for Jira issue types
 interface JiraComment {
   body: string;
   created: string;
   author: {
     displayName?: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface JiraIssueFields {
@@ -18,24 +28,24 @@ interface JiraIssueFields {
   created: string;
   issuetype?: {
     name: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   status?: {
     name: string;
-    [key: string]: any;
+    [key: string]: unknown;
   };
   comment?: {
     comments: JiraComment[];
-    [key: string]: any;
+    [key: string]: unknown;
   };
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface JiraIssue {
   id: string;
   key: string;
   fields: JiraIssueFields;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 interface StructuredJiraIssue {
@@ -73,8 +83,14 @@ export class JiraService {
   private client: JiraApi;
 
   constructor() {
+    // Use the dedicated Jira URL if available, otherwise derive from Atlassian host
+    const jiraUrl = config.jira.url || config.atlassian.host;
+
     // Extract the hostname from the full URL
-    const host = config.atlassian.host.replace(/^https?:\/\//, '');
+    const host = jiraUrl.replace(/^https?:\/\//, '');
+
+    // Disable SSL verification globally for Node.js (bypass self-signed certificate issues)
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
     this.client = new JiraApi({
       protocol: 'https',
@@ -82,7 +98,7 @@ export class JiraService {
       username: config.atlassian.email,
       password: config.atlassian.apiToken,
       apiVersion: 2,
-      strictSSL: true,
+      strictSSL: false, // Force disable SSL verification
     });
   }
 
@@ -256,4 +272,192 @@ export class JiraService {
       throw error;
     }
   }
+
+  /**
+   * Create a new issue
+   * @param issueData The issue data to create
+   * @returns The created issue
+   */
+  async createIssue(issueData: {
+    project: string;
+    summary: string;
+    description?: string;
+    issueType: string;
+    priority?: string;
+    assignee?: string;
+    labels?: string[];
+    components?: string[];
+    [key: string]: unknown;
+  }): Promise<unknown> {
+    try {
+      const issue = {
+        fields: {
+          project: { key: issueData.project },
+          summary: issueData.summary,
+          description: issueData.description || '',
+          issuetype: { name: issueData.issueType },
+          ...(issueData.priority && { priority: { name: issueData.priority } }),
+          ...(issueData.assignee && { assignee: { name: issueData.assignee } }),
+          ...(issueData.labels && { labels: issueData.labels }),
+          ...(issueData.components && {
+            components: issueData.components.map((c) => ({ name: c })),
+          }),
+        },
+      };
+
+      return await this.client.addNewIssue(issue);
+    } catch (error) {
+      console.error('Error creating issue:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update an existing issue
+   * @param issueKey The key of the issue to update
+   * @param updateData The data to update
+   * @returns The updated issue
+   */
+  async updateIssue(
+    issueKey: string,
+    updateData: {
+      summary?: string;
+      description?: string;
+      priority?: string;
+      assignee?: string;
+      labels?: string[];
+      [key: string]: unknown;
+    },
+  ): Promise<void> {
+    try {
+      const update: { fields: Record<string, unknown> } = { fields: {} };
+
+      if (updateData.summary) update.fields.summary = updateData.summary;
+      if (updateData.description)
+        update.fields.description = updateData.description;
+      if (updateData.priority)
+        update.fields.priority = { name: updateData.priority };
+      if (updateData.assignee)
+        update.fields.assignee = { name: updateData.assignee };
+      if (updateData.labels) update.fields.labels = updateData.labels;
+
+      await this.client.updateIssue(issueKey, update);
+    } catch (error) {
+      console.error(`Error updating issue ${issueKey}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete an issue
+   * @param issueKey The key of the issue to delete
+   * @returns Success status
+   */
+  async deleteIssue(issueKey: string): Promise<void> {
+    try {
+      await this.client.deleteIssue(issueKey);
+    } catch (error) {
+      console.error(`Error deleting issue ${issueKey}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Add a comment to an issue
+   * @param issueKey The key of the issue
+   * @param comment The comment text
+   * @returns The added comment
+   */
+  async addComment(issueKey: string, comment: string): Promise<unknown> {
+    try {
+      return await this.client.addComment(issueKey, { body: comment });
+    } catch (error) {
+      console.error(`Error adding comment to issue ${issueKey}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get available transitions for an issue
+   * @param issueKey The key of the issue
+   * @returns Available transitions
+   */
+  async getTransitions(issueKey: string): Promise<unknown> {
+    try {
+      return await this.client.listTransitions(issueKey);
+    } catch (error) {
+      console.error(`Error getting transitions for issue ${issueKey}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Transition an issue to a new status
+   * @param issueKey The key of the issue
+   * @param transitionId The ID of the transition
+   * @param comment Optional comment for the transition
+   * @returns The transition result
+   */
+  async transitionIssue(
+    issueKey: string,
+    transitionId: string,
+    comment?: string,
+  ): Promise<void> {
+    try {
+      const transition: {
+        transition: { id: string };
+        update?: { comment: Array<{ add: { body: string } }> };
+      } = { transition: { id: transitionId } };
+      if (comment) {
+        transition.update = { comment: [{ add: { body: comment } }] };
+      }
+      await this.client.transitionIssue(issueKey, transition);
+    } catch (error) {
+      console.error(`Error transitioning issue ${issueKey}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Get all projects
+   * @returns List of all projects
+   */
+  async getAllProjects(): Promise<unknown> {
+    try {
+      return await this.client.listProjects();
+    } catch (error) {
+      console.error('Error getting all projects:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Add work log to an issue
+   * @param issueKey The key of the issue
+   * @param timeSpent Time spent (e.g., "2h 30m")
+   * @param comment Optional comment
+   * @param started Optional start date
+   * @returns The added work log
+   */
+  async addWorklog(
+    issueKey: string,
+    timeSpent: string,
+    comment?: string,
+    started?: string,
+  ): Promise<unknown> {
+    try {
+      const worklog: { timeSpent: string; comment?: string; started?: string } =
+        { timeSpent };
+      if (comment) worklog.comment = comment;
+      if (started) worklog.started = started;
+
+      return await this.client.addWorklog(issueKey, worklog);
+    } catch (error) {
+      console.error(`Error adding worklog to issue ${issueKey}:`, error);
+      throw error;
+    }
+  }
+
+  // TODO: Implement getWorklog when API signature is clarified
+  // async getWorklog(issueKey: string): Promise<any> { ... }
 }

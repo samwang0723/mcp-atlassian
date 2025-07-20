@@ -15,6 +15,7 @@ export class ConfluenceService {
     host = host.replace(/\/wiki$/, '');
 
     // Configure authentication based on the method
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const authConfig: any = {};
 
     if (
@@ -88,7 +89,7 @@ export class ConfluenceService {
    */
   async searchContent(cql: string, limit = 10) {
     try {
-      return await this.client.search.search({
+      return await this.client.search.searchByCQL({
         cql,
         limit,
       });
@@ -165,6 +166,7 @@ export class ConfluenceService {
     },
   ) {
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const page: any = {
         version: { number: updateData.version },
       };

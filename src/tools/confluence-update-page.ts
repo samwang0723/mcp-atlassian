@@ -50,11 +50,11 @@ export function registerConfluenceUpdatePageTool(
       try {
         const result = await confluenceService.updatePage({
           id: pageId,
-          title,
+          title: title || '',
           status,
           body: {
             representation,
-            value: content,
+            value: content || '',
           },
           version: {
             number: version,

@@ -4,25 +4,28 @@ import { ConfluenceV2Service } from '../services/confluencev2';
 import { formatResponse, formatErrorResponse } from './utils';
 
 /**
- * Register the get-confluence-space tool with the MCP server
+ * Register the get-confluence-spaces tool with the MCP server
  * @param server The MCP server instance
  * @param confluenceService The ConfluenceV2 service instance
  */
-export function registerGetConfluenceSpaceTool(
+export function registerGetConfluenceSpacesTool(
   server: McpServer,
   confluenceService: ConfluenceV2Service,
 ) {
   server.tool(
-    'get_confluence_space',
+    'get_confluence_spaces',
     {
-      spaceIdOrKey: z
-        .string()
-        .describe('The ID or key of the Confluence space to retrieve'),
+      limit: z
+        .number()
+        .optional()
+        .default(25)
+        .describe('Maximum number of results to return (default: 25)'),
+      cursor: z.string().optional().describe('Cursor for pagination'),
     },
-    async ({ spaceIdOrKey }) => {
+    async ({ limit = 25, cursor }) => {
       try {
-        const space = await confluenceService.getSpace(spaceIdOrKey);
-        return formatResponse(space);
+        const results = await confluenceService.getSpaces(limit, cursor);
+        return formatResponse(results);
       } catch (err) {
         return formatErrorResponse(err);
       }

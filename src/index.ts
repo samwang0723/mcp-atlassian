@@ -9,18 +9,23 @@ import { randomUUID } from 'node:crypto';
 import { isInitializeRequest } from '@modelcontextprotocol/sdk/types.js';
 import dotenv from 'dotenv';
 
-import { ConfluenceService } from './services/confluence';
+import { ConfluenceV2Service } from './services/confluencev2';
 import { JiraService } from './services/jira';
 import { isToolEnabled, logEnabledTools } from './utils/tool-filter';
 import {
   // Confluence tools
   registerSearchConfluenceTool,
+  registerSearchConfluencePagesByTitleTool,
   registerGetConfluenceSpaceTool,
+  registerGetConfluenceSpacesTool,
   registerGetConfluenceContentTool,
   registerGetConfluencePagesTool,
+  registerGetConfluencePagesByLabelTool,
+  registerGetConfluencePageInlineCommentsTool,
   registerConfluenceCreatePageTool,
   registerConfluenceUpdatePageTool,
-  registerConfluenceDeletePageTool,
+  registerUpdateConfluencePageTitleTool,
+  registerCreateConfluenceFooterCommentTool,
   // Jira tools
   registerSearchJiraIssuesTool,
   registerGetJiraIssueTool,
@@ -39,11 +44,11 @@ dotenv.config();
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
 class McpAtlassianServer {
-  private confluenceService: ConfluenceService;
+  private confluenceService: ConfluenceV2Service;
   private jiraService: JiraService;
 
   constructor() {
-    this.confluenceService = new ConfluenceService();
+    this.confluenceService = new ConfluenceV2Service();
     this.jiraService = new JiraService();
 
     // Log enabled tools for debugging
@@ -61,8 +66,14 @@ class McpAtlassianServer {
     if (isToolEnabled('search_confluence')) {
       registerSearchConfluenceTool(server, this.confluenceService);
     }
-    if (isToolEnabled('get_confluence_space')) {
+    if (isToolEnabled('search_confluence_pages_by_title')) {
+      registerSearchConfluencePagesByTitleTool(server, this.confluenceService);
+    }
+    if (isToolEnabled('get_confluence_space_by_id_or_key')) {
       registerGetConfluenceSpaceTool(server, this.confluenceService);
+    }
+    if (isToolEnabled('get_confluence_spaces')) {
+      registerGetConfluenceSpacesTool(server, this.confluenceService);
     }
     if (isToolEnabled('get_confluence_content')) {
       registerGetConfluenceContentTool(server, this.confluenceService);
@@ -70,14 +81,26 @@ class McpAtlassianServer {
     if (isToolEnabled('get_confluence_pages')) {
       registerGetConfluencePagesTool(server, this.confluenceService);
     }
+    if (isToolEnabled('get_confluence_pages_by_label')) {
+      registerGetConfluencePagesByLabelTool(server, this.confluenceService);
+    }
+    if (isToolEnabled('get_confluence_page_inline_comments')) {
+      registerGetConfluencePageInlineCommentsTool(
+        server,
+        this.confluenceService,
+      );
+    }
     if (isToolEnabled('confluence_create_page')) {
       registerConfluenceCreatePageTool(server, this.confluenceService);
     }
     if (isToolEnabled('confluence_update_page')) {
       registerConfluenceUpdatePageTool(server, this.confluenceService);
     }
-    if (isToolEnabled('confluence_delete_page')) {
-      registerConfluenceDeletePageTool(server, this.confluenceService);
+    if (isToolEnabled('update_confluence_page_title')) {
+      registerUpdateConfluencePageTitleTool(server, this.confluenceService);
+    }
+    if (isToolEnabled('create_confluence_footer_comment')) {
+      registerCreateConfluenceFooterCommentTool(server, this.confluenceService);
     }
 
     // Register Jira tools (conditionally)
@@ -126,12 +149,17 @@ class McpAtlassianServer {
         enabled_tools: {
           confluence: [
             'search_confluence',
-            'get_confluence_space',
+            'search_confluence_pages_by_title',
+            'get_confluence_space_by_id_or_key',
+            'get_confluence_spaces',
             'get_confluence_content',
             'get_confluence_pages',
+            'get_confluence_pages_by_label',
+            'get_confluence_page_inline_comments',
             'confluence_create_page',
             'confluence_update_page',
-            'confluence_delete_page',
+            'update_confluence_page_title',
+            'create_confluence_footer_comment',
           ].filter((tool) => isToolEnabled(tool)),
           jira: [
             'search_jira_issues',

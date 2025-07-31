@@ -16,7 +16,7 @@ export function registerConfluenceUpdatePageTool(
     'confluence_update_page',
     {
       pageId: z.string().describe('The ID of the page to update'),
-      title: z.string().describe('The new title of the page'),
+      title: z.string().optional().describe('The new title of the page'),
       content: z.string().describe('The new content of the page'),
       status: z
         .enum(['current', 'draft'])

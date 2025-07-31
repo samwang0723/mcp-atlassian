@@ -3,8 +3,12 @@ import config from '@/config/env';
 // Define tool categories
 export const READ_TOOLS = [
   'search_confluence',
-  'get_confluence_space',
+  'search_confluence_pages_by_title',
+  'get_confluence_space_by_id_or_key',
+  'get_confluence_spaces',
   'get_confluence_content',
+  'get_confluence_page_inline_comments',
+  'get_confluence_pages_by_label',
   'get_confluence_pages',
   'search_jira_issues',
   'get_jira_issue',
@@ -15,7 +19,8 @@ export const READ_TOOLS = [
 export const WRITE_TOOLS = [
   'confluence_create_page',
   'confluence_update_page',
-  'confluence_delete_page',
+  'update_confluence_page_title',
+  'create_confluence_footer_comment',
   'jira_create_issue',
   'jira_update_issue',
   'jira_add_comment',

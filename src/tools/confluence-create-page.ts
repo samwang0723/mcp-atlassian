@@ -1,38 +1,57 @@
 import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
-import { ConfluenceService } from '../services/confluence';
+import { ConfluenceV2Service } from '../services/confluencev2';
 import { formatResponse, formatErrorResponse } from './utils';
 
 /**
  * Register the confluence-create-page tool with the MCP server
  * @param server The MCP server instance
- * @param confluenceService The Confluence service instance
+ * @param confluenceService The ConfluenceV2 service instance
  */
 export function registerConfluenceCreatePageTool(
   server: McpServer,
-  confluenceService: ConfluenceService,
+  confluenceService: ConfluenceV2Service,
 ) {
   server.tool(
     'confluence_create_page',
     {
-      spaceKey: z
+      spaceId: z
         .string()
-        .describe('The key of the space where the page will be created'),
+        .describe('The ID of the space where the page will be created'),
       title: z.string().describe('The title of the page'),
-      content: z
-        .string()
-        .describe('The content of the page in Confluence storage format'),
+      content: z.string().describe('The content of the page in storage format'),
+      status: z
+        .enum(['current', 'draft'])
+        .optional()
+        .default('current')
+        .describe('The status of the page (default: current)'),
+      representation: z
+        .enum(['storage', 'atlas_doc_format', 'wiki'])
+        .optional()
+        .default('storage')
+        .describe('The content representation format (default: storage)'),
       parentId: z
         .string()
         .optional()
         .describe('The ID of the parent page (optional)'),
     },
-    async ({ spaceKey, title, content, parentId }) => {
+    async ({
+      spaceId,
+      title,
+      content,
+      status = 'current',
+      representation = 'storage',
+      parentId,
+    }) => {
       try {
         const result = await confluenceService.createPage({
-          spaceKey,
+          spaceId,
           title,
-          content,
+          status,
+          body: {
+            representation,
+            value: content,
+          },
           parentId,
         });
         return formatResponse(result);

@@ -4,40 +4,31 @@ import { ConfluenceV2Service } from '../services/confluencev2';
 import { formatResponse, formatErrorResponse } from './utils';
 
 /**
- * Register the search-confluence tool with the MCP server
+ * Register the get-confluence-page-inline-comments tool with the MCP server
  * @param server The MCP server instance
  * @param confluenceService The ConfluenceV2 service instance
  */
-export function registerSearchConfluenceTool(
+export function registerGetConfluencePageInlineCommentsTool(
   server: McpServer,
   confluenceService: ConfluenceV2Service,
 ) {
   server.tool(
-    'search_confluence',
+    'get_confluence_page_inline_comments',
     {
-      searchText: z.string().describe('Text to search for in page content'),
-      spaceKey: z
-        .string()
-        .optional()
-        .describe('Optional space key to limit search to a specific space'),
+      pageId: z.string().describe('The ID of the page'),
       limit: z
         .number()
         .optional()
         .default(25)
         .describe('Maximum number of results to return (default: 25)'),
-      start: z
-        .number()
-        .optional()
-        .default(0)
-        .describe('Starting index for pagination (default: 0)'),
+      cursor: z.string().optional().describe('Cursor for pagination'),
     },
-    async ({ searchText, spaceKey, limit = 25, start = 0 }) => {
+    async ({ pageId, limit = 25, cursor }) => {
       try {
-        const results = await confluenceService.searchPagesByContent(
-          searchText,
-          spaceKey,
+        const results = await confluenceService.getPageInlineComments(
+          pageId,
           limit,
-          start,
+          cursor,
         );
         return formatResponse(results, true);
       } catch (err) {

@@ -1,13 +1,23 @@
 # MCP Atlassian
 
-A Model Context Protocol (MCP) server that provides tools for interacting with Atlassian products (Confluence and Jira).
+A Model Context Protocol (MCP) server that provides comprehensive tools for interacting with Atlassian products (Confluence and Jira).
 
 ## Overview
 
-This MCP server allows AI agents to interact with Atlassian products through a standardized interface. It provides tools for:
+This MCP server allows AI agents to interact with Atlassian products through a standardized interface. It provides extensive tools for:
 
-- **Confluence**: Search content, get spaces, retrieve content, and list pages
-- **Jira**: Search issues, get issue details, list projects, and more
+- **Confluence**: Full CRUD operations, content search, space management, page management, comments, labels, and more using v2 REST API
+- **Jira**: Issue management, project operations, transitions, comments, and comprehensive workflow support
+
+## Key Features
+
+- **Modern API Support**: Uses Confluence v2 REST API with fallback to v1 for search functionality
+- **Comprehensive Toolset**: 18+ Confluence tools and 8+ Jira tools covering all major operations
+- **Security & Privacy**: Built-in PII filtering and SSL verification controls
+- **Flexible Configuration**: Support for separate service URLs, authentication methods, and tool filtering
+- **Pagination Support**: Cursor-based pagination for v2 APIs and offset/limit for v1 APIs
+- **Error Handling**: Comprehensive error handling with detailed error messages
+- **Type Safety**: Full TypeScript implementation with proper type definitions
 
 ## Prerequisites
 
@@ -40,6 +50,18 @@ This MCP server allows AI agents to interact with Atlassian products through a s
    ATLASSIAN_HOST=https://your-domain.atlassian.net
    ATLASSIAN_EMAIL=your-email@example.com
    ATLASSIAN_API_TOKEN=your-api-token
+   
+   # Optional: Use separate URLs for Confluence/Jira
+   CONFLUENCE_URL=https://your-domain.atlassian.net/wiki
+   JIRA_URL=https://your-domain.atlassian.net
+   
+   # Optional: SSL verification (default: true)
+   CONFLUENCE_SSL_VERIFY=false
+   JIRA_SSL_VERIFY=false
+   
+   # Optional: Tool filtering
+   READ_ONLY_MODE=false
+   ENABLED_TOOLS=search_confluence,get_confluence_space,confluence_create_page
    ```
 
 ### Docker Installation
@@ -87,41 +109,108 @@ This will start the MCP server, which will listen for requests on stdin and resp
 
 #### Confluence Tools
 
-- **search-confluence**: Search for content in Confluence using CQL
+**Search & Discovery:**
+- **search_confluence**: Search for content in Confluence using v1 API with CQL
+  - Parameters: `searchText` (string), `spaceKey` (string, optional), `limit` (number), `start` (number)
 
-  - Parameters: `query` (string)
+- **search_confluence_pages_by_title**: Search pages by title using v2 API
+  - Parameters: `title` (string, optional), `spaceId` (string, optional), `limit` (number), `cursor` (string, optional)
 
-- **get-confluence-space**: Get information about a specific Confluence space
+**Space Management:**
+- **get_confluence_space_by_id_or_key**: Get information about a specific Confluence space
+  - Parameters: `spaceIdOrKey` (string)
 
-  - Parameters: `spaceKey` (string)
+- **get_confluence_spaces**: Get all available spaces
+  - Parameters: `limit` (number, optional), `cursor` (string, optional)
 
-- **get-confluence-content**: Get specific content by ID
+**Page Management:**
+- **get_confluence_content**: Get specific page content by ID
+  - Parameters: `pageId` (string), `bodyFormat` (enum: storage/atlas_doc_format/wiki, optional)
 
-  - Parameters: `contentId` (string)
+- **get_confluence_pages**: Get all pages in a space
+  - Parameters: `spaceId` (string), `limit` (number, optional), `cursor` (string, optional)
 
-- **get-confluence-pages**: Get all pages in a space
-  - Parameters: `spaceKey` (string), `limit` (number, optional)
+- **get_confluence_child_pages**: Get child pages of a specific page
+  - Parameters: `pageId` (string), `limit` (number, optional), `cursor` (string, optional)
+
+- **confluence_create_page**: Create a new Confluence page
+  - Parameters: `spaceId` (string), `title` (string), `content` (string), `status` (enum, optional), `representation` (enum, optional), `parentId` (string, optional)
+
+- **confluence_update_page**: Update an existing page
+  - Parameters: `pageId` (string), `title` (string), `content` (string), `version` (number), `status` (enum, optional), `representation` (enum, optional), `versionMessage` (string, optional)
+
+- **update_confluence_page_title**: Update only the title of a page
+  - Parameters: `pageId` (string), `title` (string), `status` (enum, optional)
+
+- **confluence_delete_page**: Delete a Confluence page
+  - Parameters: `pageId` (string)
+
+**Label Management:**
+- **get_confluence_pages_by_label**: Find pages with specific labels
+  - Parameters: `label` (string), `spaceId` (string, optional), `limit` (number, optional), `cursor` (string, optional)
+
+- **get_confluence_page_labels**: Get labels for a specific page
+  - Parameters: `pageId` (string), `limit` (number, optional), `cursor` (string, optional)
+
+- **add_confluence_page_labels**: Add labels to a page
+  - Parameters: `pageId` (string), `labels` (array of strings)
+
+**Comments:**
+- **get_confluence_page_comments**: Get regular comments on a page
+  - Parameters: `pageId` (string), `limit` (number, optional), `cursor` (string, optional)
+
+- **add_confluence_page_comment**: Add a comment to a page
+  - Parameters: `pageId` (string), `content` (string), `representation` (enum, optional)
+
+- **get_confluence_page_inline_comments**: Get inline comments on a page
+  - Parameters: `pageId` (string), `limit` (number, optional), `cursor` (string, optional)
+
+- **create_confluence_footer_comment**: Create a footer comment
+  - Parameters: `pageId` (string, optional), `blogPostId` (string, optional), `parentCommentId` (string, optional), `attachmentId` (string, optional), `customContentId` (string, optional), `content` (string), `representation` (enum, optional)
 
 #### Jira Tools
 
-- **search-jira-issues**: Search for issues using JQL
-
+- **search_jira_issues**: Search for issues using JQL (Jira Query Language)
   - Parameters: `jql` (string), `maxResults` (number, optional)
 
-- **get-jira-issue**: Get a specific issue by key
-
+- **get_jira_issue**: Get detailed information about a specific issue
   - Parameters: `issueKey` (string)
 
-- **get-jira-projects**: Get all projects
-
+- **jira_get_all_projects**: Get all accessible projects
   - Parameters: none
 
-- **get-jira-project**: Get a specific project by key
+- **jira_create_issue**: Create a new Jira issue
+  - Parameters: `projectKey` (string), `issueType` (string), `summary` (string), `description` (string, optional), additional fields
 
-  - Parameters: `projectKey` (string)
+- **jira_update_issue**: Update an existing issue
+  - Parameters: `issueKey` (string), `fields` (object with update data)
 
-- **get-jira-issue-types**: Get all issue types
-  - Parameters: none
+- **jira_add_comment**: Add a comment to an issue
+  - Parameters: `issueKey` (string), `comment` (string)
+
+- **jira_get_transitions**: Get available transitions for an issue
+  - Parameters: `issueKey` (string)
+
+- **jira_transition_issue**: Transition an issue to a different status
+  - Parameters: `issueKey` (string), `transitionId` (string), `comment` (string, optional)
+
+## Architecture Notes
+
+### Confluence API Migration
+
+This server primarily uses the **Confluence v2 REST API** for most operations, with strategic fallback to v1 API where necessary:
+
+- **v2 API**: Used for spaces, pages, comments, labels - provides better performance and modern cursor-based pagination
+- **v1 API**: Used for content search via CQL - provides more powerful search capabilities
+- **SSL Support**: Configurable SSL verification bypass for self-hosted instances
+- **Authentication**: Supports basic auth, OAuth 2.0 (planned), and PAT tokens
+
+### Tool Filtering & Security
+
+- **Read-Only Mode**: Disable all write operations for safe exploration
+- **Tool Whitelist**: Enable only specific tools via `ENABLED_TOOLS` environment variable
+- **PII Filtering**: Automatic detection and masking of sensitive information in responses
+- **Error Context**: Detailed error messages without exposing sensitive configuration
 
 ## Development
 
@@ -130,23 +219,43 @@ This will start the MCP server, which will listen for requests on stdin and resp
 ```
 src/
 ├── config/         # Configuration files
-├── examples/       # Example usage
+│   └── env.ts      # Environment configuration with validation
 ├── services/       # Service classes for Atlassian APIs
-│   ├── confluence.ts
-│   └── jira.ts
-├── tools/          # MCP tools
-│   ├── search-confluence.ts
-│   ├── get-confluence-space.ts
-│   ├── get-confluence-content.ts
-│   ├── get-confluence-pages.ts
-│   ├── search-jira-issues.ts
-│   ├── get-jira-issue.ts
-│   ├── get-jira-projects.ts
-│   ├── get-jira-project.ts
-│   ├── get-jira-issue-types.ts
-│   ├── utils.ts
-│   └── index.ts
-└── index.ts        # Main entry point
+│   ├── confluencev2.ts    # Confluence v2 REST API service (primary)
+│   ├── confluence.ts      # Legacy Confluence service (deprecated)
+│   └── jira.ts           # Jira REST API service
+├── tools/          # MCP tool implementations
+│   ├── search-confluence.ts                    # Content search (v1 API)
+│   ├── search-confluence-pages-by-title.ts     # Title search (v2 API)
+│   ├── get-confluence-space.ts                 # Single space info
+│   ├── get-confluence-spaces.ts                # All spaces list
+│   ├── get-confluence-content.ts               # Page content by ID
+│   ├── get-confluence-pages.ts                 # Pages in space
+│   ├── get-confluence-child-pages.ts           # Child pages
+│   ├── get-confluence-pages-by-label.ts        # Pages by label
+│   ├── get-confluence-page-labels.ts           # Page labels
+│   ├── add-confluence-page-labels.ts           # Add labels
+│   ├── get-confluence-page-comments.ts         # Page comments
+│   ├── add-confluence-page-comment.ts          # Add comment
+│   ├── get-confluence-page-inline-comments.ts  # Inline comments
+│   ├── confluence-create-page.ts               # Create page
+│   ├── confluence-update-page.ts               # Update page
+│   ├── update-confluence-page-title.ts         # Update title only
+│   ├── confluence-delete-page.ts               # Delete page
+│   ├── create-confluence-footer-comment.ts     # Footer comments
+│   ├── search-jira-issues.ts                   # Jira search
+│   ├── get-jira-issue.ts                       # Single issue
+│   ├── jira-create-issue.ts                    # Create issue
+│   ├── jira-update-issue.ts                    # Update issue
+│   ├── jira-add-comment.ts                     # Add comment
+│   ├── jira-get-transitions.ts                 # Get transitions
+│   ├── jira-transition-issue.ts                # Transition issue
+│   ├── jira-get-all-projects.ts                # All projects
+│   ├── utils.ts                                 # Utility functions & PII filtering
+│   └── index.ts                                # Tool exports
+├── utils/          # Utility modules
+│   └── tool-filter.ts      # Tool filtering and access control
+└── index.ts        # Main entry point and server setup
 ```
 
 ### Building

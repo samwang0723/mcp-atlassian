@@ -4,42 +4,38 @@ import { ConfluenceV2Service } from '../services/confluencev2';
 import { formatResponse, formatErrorResponse } from './utils';
 
 /**
- * Register the search-confluence tool with the MCP server
+ * Register the get-confluence-pages-by-label tool with the MCP server
  * @param server The MCP server instance
  * @param confluenceService The ConfluenceV2 service instance
  */
-export function registerSearchConfluenceTool(
+export function registerGetConfluencePagesByLabelTool(
   server: McpServer,
   confluenceService: ConfluenceV2Service,
 ) {
   server.tool(
-    'search_confluence',
+    'get_confluence_pages_by_label',
     {
-      searchText: z.string().describe('Text to search for in page content'),
-      spaceKey: z
+      label: z.string().describe('The label to search for'),
+      spaceId: z
         .string()
         .optional()
-        .describe('Optional space key to limit search to a specific space'),
+        .describe('Optional space ID to limit search'),
       limit: z
         .number()
         .optional()
         .default(25)
         .describe('Maximum number of results to return (default: 25)'),
-      start: z
-        .number()
-        .optional()
-        .default(0)
-        .describe('Starting index for pagination (default: 0)'),
+      cursor: z.string().optional().describe('Cursor for pagination'),
     },
-    async ({ searchText, spaceKey, limit = 25, start = 0 }) => {
+    async ({ label, spaceId, limit = 25, cursor }) => {
       try {
-        const results = await confluenceService.searchPagesByContent(
-          searchText,
-          spaceKey,
+        const results = await confluenceService.getPagesByLabel(
+          label,
           limit,
-          start,
+          spaceId,
+          cursor,
         );
-        return formatResponse(results, true);
+        return formatResponse(results);
       } catch (err) {
         return formatErrorResponse(err);
       }

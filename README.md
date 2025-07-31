@@ -50,18 +50,6 @@ This MCP server allows AI agents to interact with Atlassian products through a s
    ATLASSIAN_HOST=https://your-domain.atlassian.net
    ATLASSIAN_EMAIL=your-email@example.com
    ATLASSIAN_API_TOKEN=your-api-token
-   
-   # Optional: Use separate URLs for Confluence/Jira
-   CONFLUENCE_URL=https://your-domain.atlassian.net/wiki
-   JIRA_URL=https://your-domain.atlassian.net
-   
-   # Optional: SSL verification (default: true)
-   CONFLUENCE_SSL_VERIFY=false
-   JIRA_SSL_VERIFY=false
-   
-   # Optional: Tool filtering
-   READ_ONLY_MODE=false
-   ENABLED_TOOLS=search_confluence,get_confluence_space,confluence_create_page
    ```
 
 ### Docker Installation
@@ -103,13 +91,25 @@ make start
 make docker-run
 ```
 
-This will start the MCP server, which will listen for requests on stdin and respond on stdout.
+This will start the MCP server, which will listen and respond on streamable HTTP.
+
+### MCP configuration
+
+```json
+    "mcp-searchapi": {
+      "name": "mcp-searchapi",
+      "type": "streamable-http",
+      "streamable": true,
+      "url": "http://localhost:3007/mcp"
+    }
+```
 
 ### Available Tools
 
 #### Confluence Tools
 
 **Search & Discovery:**
+
 - **search_confluence**: Search for content in Confluence using v1 API with CQL
   - Parameters: `searchText` (string), `spaceKey` (string, optional), `limit` (number), `start` (number)
 
@@ -117,6 +117,7 @@ This will start the MCP server, which will listen for requests on stdin and resp
   - Parameters: `title` (string, optional), `spaceId` (string, optional), `limit` (number), `cursor` (string, optional)
 
 **Space Management:**
+
 - **get_confluence_space_by_id_or_key**: Get information about a specific Confluence space
   - Parameters: `spaceIdOrKey` (string)
 
@@ -124,6 +125,7 @@ This will start the MCP server, which will listen for requests on stdin and resp
   - Parameters: `limit` (number, optional), `cursor` (string, optional)
 
 **Page Management:**
+
 - **get_confluence_content**: Get specific page content by ID
   - Parameters: `pageId` (string), `bodyFormat` (enum: storage/atlas_doc_format/wiki, optional)
 
@@ -146,6 +148,7 @@ This will start the MCP server, which will listen for requests on stdin and resp
   - Parameters: `pageId` (string)
 
 **Label Management:**
+
 - **get_confluence_pages_by_label**: Find pages with specific labels
   - Parameters: `label` (string), `spaceId` (string, optional), `limit` (number, optional), `cursor` (string, optional)
 
@@ -156,6 +159,7 @@ This will start the MCP server, which will listen for requests on stdin and resp
   - Parameters: `pageId` (string), `labels` (array of strings)
 
 **Comments:**
+
 - **get_confluence_page_comments**: Get regular comments on a page
   - Parameters: `pageId` (string), `limit` (number, optional), `cursor` (string, optional)
 

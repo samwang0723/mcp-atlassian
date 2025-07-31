@@ -27,7 +27,6 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.13.3",
     "@types/express": "^5.0.3",
-    "confluence.js": "^2.1.0",
     "dotenv": "^16.6.1",
     "express": "^5.1.0",
     "module-alias": "^2.2.3",

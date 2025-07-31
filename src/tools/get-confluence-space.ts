@@ -13,7 +13,7 @@ export function registerGetConfluenceSpaceTool(
   confluenceService: ConfluenceV2Service,
 ) {
   server.tool(
-    'get_confluence_space',
+    'get_confluence_space_by_id_or_key',
     {
       spaceIdOrKey: z
         .string()

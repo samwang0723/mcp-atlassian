@@ -13,6 +13,8 @@ services:
     tty: true
     volumes:
       - ./logs:/app/logs
+    ports:
+      - '3005:3005'
     networks:
       - mcp-network
 

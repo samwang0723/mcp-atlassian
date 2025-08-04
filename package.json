@@ -11,7 +11,7 @@
     "format": "prettier --write \"src/**/*.ts\"",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "author": "sam.wang.0723@gmail.com",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^22.13.5",

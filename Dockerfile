@@ -35,11 +35,11 @@ COPY --from=builder /app/paths.js ./paths.js
 COPY --from=builder /app/tsconfig.json ./tsconfig.json
 
 # Copy .env file if it exists
-COPY --from=builder /app/.env ./.env
+# COPY --from=builder /app/.env ./.env
 
 # Set environment variables
 ENV NODE_ENV=production
-ENV PORT=3005
+# ENV PORT=3005
 
 # Start the application
 CMD ["node", "-r", "tsconfig-paths/register", "-r", "./paths.js", "dist/index.js"] 

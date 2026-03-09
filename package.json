@@ -14,7 +14,7 @@
   "author": "sam.wang.0723@gmail.com",
   "license": "MIT",
   "devDependencies": {
-    "@types/node": "^22.13.5",
+    "@types/node": "^25.3.5",
     "@typescript-eslint/eslint-plugin": "^8.46.2",
     "@typescript-eslint/parser": "^8.38.0",
     "eslint": "^9.32.0",
